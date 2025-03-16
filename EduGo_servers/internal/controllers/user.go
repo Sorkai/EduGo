@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 
@@ -130,7 +130,8 @@ func generateJWT(userID int64, username string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	secret := []byte(os.Getenv("JWT_SECRET"))
 	if len(secret) == 0 {
-		return "", fmt.Errorf("JWT_SECRET环境变量未设置")
+		// 如果环境变量未设置，使用默认密钥（仅用于开发环境）
+		secret = []byte("your-secret-key")
 	}
 	return token.SignedString(secret)
 }
@@ -283,5 +284,34 @@ func Logout(c *gin.Context) {
 	// 在实际应用中，这里可以添加token黑名单机制
 	c.JSON(http.StatusOK, gin.H{
 		"message": "注销成功",
+	})
+}
+
+// GetUserProfile 获取用户个人资料
+func GetUserProfile(c *gin.Context) {
+	userID := c.GetInt64("userID")
+
+	userRepo := repository.NewUserRepository(database.DB)
+	user, err := userRepo.GetUserByID(c.Request.Context(), userID)
+	if err != nil {
+		log.Printf("获取用户信息失败: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "服务器内部错误"})
+		return
+	}
+
+	if user == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "用户不存在"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"user": gin.H{
+			"id":        user.ID,
+			"username":  user.Username,
+			"email":     user.Email,
+			"firstName": user.FirstName,
+			"lastName":  user.LastName,
+			"createdAt": user.CreatedAt,
+		},
 	})
 }

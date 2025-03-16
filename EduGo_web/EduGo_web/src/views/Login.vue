@@ -104,25 +104,16 @@ const handleOAuthLogin = (provider: string) => {
   window.location.href = `/api/oauth/${provider}`
 }
 
+import userService from '@/services/userService'
+import axios from 'axios'
+
 const handleLogin = async () => {
   loading.value = true
   errorMessage.value = ''
 
   try {
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(form.value)
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.message || '登录失败')
-    }
-
-    const data = await response.json()
+    const data = await userService.login(form.value.username, form.value.password)
+    
     // 保存token
     if (rememberMe.value) {
       localStorage.setItem('token', data.token)
@@ -132,8 +123,10 @@ const handleLogin = async () => {
 
     Message.success('登录成功')
     router.push('/')
-  } catch (error) {
-    if (error instanceof Error) {
+  } catch (error: any) {
+    if (axios.isAxiosError(error) && error.response?.data) {
+      errorMessage.value = error.response.data.error || '登录失败'
+    } else if (error instanceof Error) {
       errorMessage.value = error.message
     } else {
       errorMessage.value = '登录过程中出现错误'

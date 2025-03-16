@@ -120,33 +120,28 @@ const validatePasswordMatch = (value: string) => {
   return value === form.value.password
 }
 
+import userService from '@/services/userService'
+import axios from 'axios'
+
 const handleRegister = async () => {
   loading.value = true
   errorMessage.value = ''
 
   try {
-    const response = await fetch('/api/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        username: form.value.username,
-        email: form.value.email,
-        password: form.value.password
-      })
+    await userService.register({
+      username: form.value.username,
+      email: form.value.email,
+      password: form.value.password,
+      firstName: '',
+      lastName: ''
     })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.message || '注册失败')
-    }
-
-    const data = await response.json()
+    
     Message.success('注册成功')
     router.push('/login')
-  } catch (error) {
-    if (error instanceof Error) {
+  } catch (error: any) {
+    if (axios.isAxiosError(error) && error.response?.data) {
+      errorMessage.value = error.response.data.error || '注册失败'
+    } else if (error instanceof Error) {
       errorMessage.value = error.message
     } else {
       errorMessage.value = '注册过程中出现错误'

@@ -1,33 +1,134 @@
-# EduGo_web
+# EduGo 前端文档
 
-This template should help get you started developing with Vue 3 in Vite.
+EduGo是一个基于AI的数智化教育应用平台，前端使用Vue 3 + TypeScript + ArcoVue开发。
 
-## Recommended IDE Setup
+## 项目结构
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+```
+src/
+├── assets/              # 静态资源
+├── components/          # 公共组件
+│   ├── MainLayout.vue   # 主布局组件
+│   └── ...
+├── router/              # 路由配置
+├── services/            # API服务
+│   └── userService.ts   # 用户相关API服务
+├── views/               # 页面视图
+│   ├── Login.vue        # 登录页面
+│   ├── Register.vue     # 注册页面
+│   ├── Profile.vue      # 用户个人资料页面
+│   ├── IntelligentAssessment.vue  # 智能测评页面
+│   ├── IntelligentTeaching.vue    # 智能教学页面
+│   ├── VirtualReality.vue         # 虚拟现实页面
+│   ├── EducationalRobot.vue       # 教育机器人页面
+│   └── IntelligentEvaluation.vue  # 智能评价页面
+├── App.vue              # 根组件
+└── main.ts              # 入口文件
+```
 
-## Type Support for `.vue` Imports in TS
+## 功能模块
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+### 用户管理模块
 
-## Customize configuration
+- 用户注册：支持用户名、邮箱、密码注册
+- 用户登录：支持用户名密码登录，JWT认证
+- 个人资料：查看和修改个人资料
+- 密码修改：支持修改密码
+- 用户注销：支持用户注销
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+### 智能测评模块
 
-## Project Setup
+- 在线测评：支持在线答题测评
+- AI分析：AI分析测评结果
+- 个性化建议：根据测评结果提供个性化学习建议
+
+### 智能教学模块
+
+- 自适应学习：根据学生能力水平提供个性化学习资源
+- 学习进度跟踪：跟踪学习进度和成果
+- 智能推荐：推荐适合的学习内容
+
+### 虚拟现实模块
+
+- 沉浸式学习：提供沉浸式学习环境
+- 3D交互：支持3D交互学习
+
+### 教育机器人模块
+
+- 智能对话：与教育机器人进行对话
+- 学习辅助：机器人辅助学习
+
+### 智能评价模块
+
+- 全面评价：对学习过程和结果进行全面评价
+- 数据分析：使用数据分析技术评价学习效果
+
+## 技术栈
+
+- Vue 3：前端框架
+- TypeScript：类型系统
+- Vite：构建工具
+- Vue Router：路由管理
+- ArcoVue：UI组件库
+- Axios：HTTP客户端
+
+## 开发环境设置
+
+### 推荐的IDE
+
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (禁用Vetur)
+
+### 项目设置
 
 ```sh
+# 安装依赖
 npm install
-```
 
-### Compile and Hot-Reload for Development
-
-```sh
+# 开发环境运行
 npm run dev
-```
 
-### Type-Check, Compile and Minify for Production
-
-```sh
+# 生产环境构建
 npm run build
 ```
+
+## API接口
+
+前端通过`services/userService.ts`与后端API交互，主要包括：
+
+- 用户注册：`POST /api/v1/register`
+- 用户登录：`POST /api/v1/login`
+- 获取用户信息：`GET /api/v1/user`
+- 更新用户信息：`PUT /api/v1/user`
+- 修改密码：`PUT /api/v1/user/password`
+- 用户注销：`POST /api/v1/logout`
+- 刷新Token：`POST /api/v1/refresh`
+
+详细API文档请参考后端API文档。
+
+## 组件说明
+
+### MainLayout
+
+主布局组件，包含导航栏、内容区域和页脚。
+
+- 响应式设计：适配不同屏幕尺寸
+- 用户状态管理：显示登录/注册按钮或用户头像
+- 导航菜单：提供主要功能模块的导航
+
+### 用户相关组件
+
+- Login：用户登录页面
+- Register：用户注册页面
+- Profile：用户个人资料页面，支持查看和修改个人信息、修改密码
+
+### 功能模块组件
+
+- IntelligentAssessment：智能测评页面
+- IntelligentTeaching：智能教学页面
+- VirtualReality：虚拟现实页面
+- EducationalRobot：教育机器人页面
+- IntelligentEvaluation：智能评价页面
+
+## 样式和主题
+
+项目使用ArcoVue的主题系统，支持亮色和暗色模式。主要样式变量定义在CSS变量中，便于统一管理和修改。
