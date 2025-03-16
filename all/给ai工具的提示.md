@@ -1,6 +1,6 @@
 # 对AI工具的要求
 1.需要按照本要求指导工作
-2.创建或修改功能需要及时修改完善EduGo_servers/API_DOC.md(后端API文档)和EduGo_web/EduGo_web/README.md(前端文档)
+2.创建或修改功能需要及时修改完善EduGo_servers/API_DOC.md(后端API文档)和all/README.md(项目文档)和EduGo_web/EduGo_web/DEVELOPMENT_DOC.md(前端文档)
 
 # 下面是项目介绍
 一个基于AI的数智化教育应用平台，预计会逐步实现以下几个功能（1、智能测评系统：人工智能可以用于开发智能测评系统，这些系统能够自动评估学生的学习成果，提供即时反馈，帮助教师和学生更好地理解学习进度和存在的问题；
