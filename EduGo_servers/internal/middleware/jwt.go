@@ -41,19 +41,49 @@ func JWTMiddleware() gin.HandlerFunc {
 		}
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		
+		// 尝试使用Claims结构体解析
 		claims := &Claims{}
-
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return jwtKey, nil
 		})
 
-		if err != nil || !token.Valid {
+		if err != nil {
+			// 如果使用Claims结构体解析失败，尝试使用MapClaims解析
+			mapClaims := jwt.MapClaims{}
+			token, err = jwt.ParseWithClaims(tokenString, mapClaims, func(token *jwt.Token) (interface{}, error) {
+				return jwtKey, nil
+			})
+
+			if err != nil || !token.Valid {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+				return
+			}
+
+			// 从MapClaims中获取用户ID和角色
+			if userID, ok := mapClaims["user_id"].(float64); ok {
+				c.Set("userID", int64(userID))
+			} else if userID, ok := mapClaims["id"].(float64); ok {
+				c.Set("userID", int64(userID))
+			}
+
+			if role, ok := mapClaims["role"].(string); ok {
+				c.Set("role", role)
+			}
+		} else if token.Valid {
+			// 如果使用Claims结构体解析成功，直接设置用户ID和角色
+			c.Set("userID", claims.UserID)
+			c.Set("role", claims.Role)
+		} else {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			return
 		}
 
-		c.Set("userID", claims.UserID)
-		c.Set("role", claims.Role)
+		// 设置用户名（如果有）
+		if token.Claims.(jwt.MapClaims)["username"] != nil {
+			c.Set("username", token.Claims.(jwt.MapClaims)["username"])
+		}
+
 		c.Next()
 	}
 }

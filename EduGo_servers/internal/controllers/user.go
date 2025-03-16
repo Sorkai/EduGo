@@ -121,8 +121,9 @@ func Register(c *gin.Context) {
 // generateJWT 生成JWT令牌
 func generateJWT(userID int64, username string) (string, error) {
 	claims := jwt.MapClaims{
-		"id":       userID,
+		"user_id":  userID,
 		"username": username,
+		"role":     "user", // 默认角色
 		"exp":      time.Now().Add(time.Hour * 24).Unix(),
 		"iat":      time.Now().Unix(),
 	}
@@ -139,7 +140,25 @@ func generateJWT(userID int64, username string) (string, error) {
 // RefreshToken 刷新JWT令牌
 func RefreshToken(c *gin.Context) {
 	userID := c.GetInt64("userID")
+	
+	// 如果上下文中没有用户名，则从数据库中获取
 	username := c.GetString("username")
+	if username == "" {
+		userRepo := repository.NewUserRepository(database.DB)
+		user, err := userRepo.GetUserByID(c.Request.Context(), userID)
+		if err != nil {
+			log.Printf("获取用户信息失败: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "服务器内部错误"})
+			return
+		}
+		
+		if user == nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "用户不存在"})
+			return
+		}
+		
+		username = user.Username
+	}
 
 	token, err := generateJWT(userID, username)
 	if err != nil {

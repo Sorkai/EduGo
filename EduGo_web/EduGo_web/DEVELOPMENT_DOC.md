@@ -75,6 +75,98 @@ const routes = [
 - Vite 4+
 - TypeScript 5+
 
+## 用户认证与登录状态管理
+
+### JWT认证
+
+EduGo前端使用JWT（JSON Web Token）进行用户认证。当用户登录成功后，后端会返回一个JWT令牌，前端将此令牌存储在本地（localStorage或sessionStorage），并在后续请求中通过Authorization头部发送给服务器。
+
+### 认证流程
+
+1. 用户登录：
+   - 用户输入用户名和密码
+   - 前端发送登录请求到后端
+   - 后端验证用户名和密码，生成JWT令牌并返回
+   - 前端将令牌存储在localStorage（如果选择"记住我"）或sessionStorage中
+
+2. 请求认证：
+   - 前端在每个需要认证的请求中添加Authorization头部
+   - 使用axios拦截器自动添加令牌到请求头中
+
+3. 登录状态检查：
+   - 在MainLayout组件中，使用checkLoginStatus方法检查用户是否已登录
+   - 如果本地存储中有令牌，尝试获取用户信息
+   - 如果获取成功，设置isLoggedIn为true
+   - 如果获取失败（如令牌过期），清除令牌并设置isLoggedIn为false
+
+4. 令牌刷新：
+   - 当令牌即将过期时，可以调用刷新令牌API获取新的令牌
+   - 无需用户重新登录
+
+### 代码示例
+
+#### 登录并存储令牌
+
+```typescript
+const handleLogin = async () => {
+  try {
+    const data = await userService.login(username, password);
+    
+    // 保存token
+    if (rememberMe) {
+      localStorage.setItem('token', data.token);
+    } else {
+      sessionStorage.setItem('token', data.token);
+    }
+    
+    // 登录成功后的操作
+    router.push('/');
+  } catch (error) {
+    // 处理错误
+  }
+};
+```
+
+#### 添加认证头部
+
+```typescript
+// 请求拦截器，添加token
+apiClient.interceptors.request.use(
+  config => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
+  }
+);
+```
+
+#### 检查登录状态
+
+```typescript
+const checkLoginStatus = async () => {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  if (token) {
+    isLoggedIn.value = true;
+    try {
+      const userProfile = await userService.getUserProfile();
+      username.value = userProfile.username;
+    } catch (error) {
+      // 如果获取用户信息失败，可能是token过期，清除token
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+      isLoggedIn.value = false;
+    }
+  } else {
+    isLoggedIn.value = false;
+  }
+};
+```
+
 ## 环境变量配置
 
 项目使用环境变量来配置不同环境下的参数，主要用于前后端分离部署时配置API地址。
