@@ -121,8 +121,28 @@ const handleLogin = async () => {
       sessionStorage.setItem('token', data.token)
     }
 
+    // 获取用户信息，包括角色
+    try {
+      const userProfile = await userService.getUserProfile()
+      // 保存用户角色，用于路由守卫
+      if (rememberMe.value) {
+        localStorage.setItem('userRole', userProfile.role || '')
+      } else {
+        sessionStorage.setItem('userRole', userProfile.role || '')
+      }
+    } catch (error) {
+      console.error('获取用户信息失败:', error)
+    }
+
     Message.success('登录成功')
-    router.push('/')
+    
+    // 如果有重定向参数，则跳转到对应页面
+    const redirect = router.currentRoute.value.query.redirect as string
+    if (redirect) {
+      router.push(redirect)
+    } else {
+      router.push('/')
+    }
   } catch (error: any) {
     if (axios.isAxiosError(error) && error.response?.data) {
       errorMessage.value = error.response.data.error || '登录失败'

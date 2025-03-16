@@ -31,6 +31,10 @@
             <template #icon><icon-dashboard /></template>
             智能评价
           </a-menu-item>
+          <a-menu-item key="user-management" v-if="hasUserManagementAccess">
+            <template #icon><icon-user-group /></template>
+            用户管理
+          </a-menu-item>
         </a-menu>
       </div>
       <div class="user-actions">
@@ -89,14 +93,16 @@ import {
   IconRobot,
   IconDashboard,
   IconUser,
-  IconExport
+  IconExport,
+  IconUserGroup
 } from '@arco-design/web-vue/es/icon'
-import userService from '@/services/userService'
+import userService, { USER_ROLES } from '@/services/userService'
 
 const router = useRouter()
 const route = useRoute()
 const isLoggedIn = ref(false)
 const username = ref('')
+const userRole = ref('')
 const currentYear = new Date().getFullYear()
 
 const activeKey = computed(() => {
@@ -106,11 +112,17 @@ const activeKey = computed(() => {
   if (path.startsWith('/vr')) return 'vr'
   if (path.startsWith('/robot')) return 'robot'
   if (path.startsWith('/evaluation')) return 'evaluation'
+  if (path.startsWith('/user-management')) return 'user-management'
   return ''
 })
 
 const userInitial = computed(() => {
   return username.value ? username.value.charAt(0).toUpperCase() : 'U'
+})
+
+// 判断是否有用户管理权限
+const hasUserManagementAccess = computed(() => {
+  return [USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.TEACHER].includes(userRole.value as any)
 })
 
 onMounted(async () => {
@@ -124,11 +136,21 @@ const checkLoginStatus = async () => {
     try {
       const userProfile = await userService.getUserProfile()
       username.value = userProfile.username
+      userRole.value = userProfile.role || ''
+      
+      // 保存用户角色到本地存储，用于路由守卫
+      if (localStorage.getItem('token')) {
+        localStorage.setItem('userRole', userRole.value)
+      } else {
+        sessionStorage.setItem('userRole', userRole.value)
+      }
     } catch (error) {
       console.error('获取用户信息失败:', error)
       // 如果获取用户信息失败，可能是token过期，清除token
       localStorage.removeItem('token')
       sessionStorage.removeItem('token')
+      localStorage.removeItem('userRole')
+      sessionStorage.removeItem('userRole')
       isLoggedIn.value = false
     }
   } else {
@@ -150,6 +172,9 @@ const handleLogout = async () => {
     Message.success('退出登录成功')
     isLoggedIn.value = false
     username.value = ''
+    userRole.value = ''
+    localStorage.removeItem('userRole')
+    sessionStorage.removeItem('userRole')
     router.push('/login')
   } catch (error) {
     console.error('退出登录失败:', error)
