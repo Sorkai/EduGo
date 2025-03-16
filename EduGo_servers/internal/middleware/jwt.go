@@ -80,8 +80,16 @@ func JWTMiddleware() gin.HandlerFunc {
 		}
 
 		// 设置用户名（如果有）
-		if token.Claims.(jwt.MapClaims)["username"] != nil {
-			c.Set("username", token.Claims.(jwt.MapClaims)["username"])
+		// 根据token.Claims的实际类型进行不同的处理
+		switch claims := token.Claims.(type) {
+		case *Claims:
+			// 如果是自定义Claims类型，目前没有username字段，可以根据需要添加
+			// 如果将来Claims结构体中添加了username字段，可以在这里设置
+		case jwt.MapClaims:
+			// 如果是MapClaims类型，检查username字段
+			if claims["username"] != nil {
+				c.Set("username", claims["username"])
+			}
 		}
 
 		c.Next()
