@@ -60,11 +60,53 @@ func main() {
 			auth.POST("/logout", controllers.Logout)
 			auth.POST("/refresh", controllers.RefreshToken)
 
+			// 超级管理员路由
+			superAdmin := auth.Group("/super-admin")
+			superAdmin.Use(middleware.SuperAdminOnly())
+			{
+				superAdmin.GET("/users", controllers.GetAllUsers)
+				superAdmin.PUT("/users/:id/role", controllers.UpdateUserRole)
+			}
+
 			// 管理员路由
 			admin := auth.Group("/admin")
 			admin.Use(middleware.AdminOnly())
 			{
-				// TODO: 添加管理员路由
+				admin.GET("/users/role/:role", controllers.GetUsersByRole)
+				admin.GET("/users/:id", controllers.GetUserByID)
+				admin.PUT("/users/:id/status", controllers.UpdateUserStatus)
+				
+				// 管理员-教师关系
+				admin.POST("/relations/teacher", controllers.CreateAdminTeacherRelation)
+				admin.GET("/relations/teachers", controllers.GetTeachersByAdmin)
+			}
+			
+			// 教师路由
+			teacher := auth.Group("/teacher")
+			teacher.Use(middleware.TeacherOnly())
+			{
+				// 教师-学生关系
+				teacher.POST("/relations/student", controllers.CreateTeacherStudentRelation)
+				teacher.GET("/relations/students", controllers.GetStudentsByTeacher)
+			}
+			
+			// 学生路由
+			student := auth.Group("/student")
+			student.Use(middleware.StudentOnly())
+			{
+				// 学生-家长关系
+				student.POST("/relations/parent", controllers.CreateStudentParentRelation)
+				student.GET("/relations/parents", controllers.GetParentsByStudent)
+			}
+			
+			// 用户管理页面API
+			userManagement := auth.Group("/user-management")
+			userManagement.Use(middleware.TeacherOnly()) // 教师及以上角色可访问
+			{
+				// 根据当前用户角色返回不同的用户列表
+				userManagement.GET("/users", controllers.GetAllUsers) // 实际会根据角色权限过滤
+				userManagement.GET("/users/role/:role", controllers.GetUsersByRole)
+				userManagement.GET("/users/:id", controllers.GetUserByID)
 			}
 		}
 	}

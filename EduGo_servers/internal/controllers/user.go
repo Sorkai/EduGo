@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,13 +9,13 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 
+	"EduGo_servers/internal/database"
 	"EduGo_servers/internal/models"
 	"EduGo_servers/internal/repository"
-	"EduGo_servers/internal/database"
 )
 
 // Login 处理用户登录请求
@@ -68,6 +69,7 @@ func Register(c *gin.Context) {
 		Email     string `json:"email" binding:"required,email"`
 		FirstName string `json:"first_name"`
 		LastName  string `json:"last_name"`
+		Role      string `json:"role"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -87,11 +89,36 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// 验证用户角色
+	role := input.Role
+	if role == "" {
+		role = models.RoleStudent // 默认为学生
+	} else {
+		// 只允许注册为教师、学生或家长
+		validRoles := map[string]bool{
+			models.RoleTeacher: true,
+			models.RoleStudent: true,
+			models.RoleParent:  true,
+		}
+		
+		if !validRoles[role] {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "无效的用户角色"})
+			return
+		}
+	}
+
+	// 检查是否是第一个用户，如果是则设置为超级管理员
+	isFirstUser := userRepo.IsFirstUser()
+	if isFirstUser {
+		role = models.RoleSuperAdmin
+	}
+
 	user := models.User{
 		Username:  input.Username,
 		Email:     input.Email,
 		FirstName: input.FirstName,
 		LastName:  input.LastName,
+		Role:      role,
 	}
 
 	if err := user.HashPassword(input.Password); err != nil {
@@ -114,16 +141,29 @@ func Register(c *gin.Context) {
 			"email":     user.Email,
 			"firstName": user.FirstName,
 			"lastName":  user.LastName,
+			"role":      user.Role,
 		},
 	})
 }
 
 // generateJWT 生成JWT令牌
 func generateJWT(userID int64, username string) (string, error) {
+	// 获取用户角色
+	userRepo := repository.NewUserRepository(database.DB)
+	user, err := userRepo.GetUserByID(context.Background(), userID)
+	if err != nil {
+		return "", err
+	}
+	
+	role := "student" // 默认角色
+	if user != nil {
+		role = user.Role
+	}
+
 	claims := jwt.MapClaims{
 		"user_id":  userID,
 		"username": username,
-		"role":     "user", // 默认角色
+		"role":     role,
 		"exp":      time.Now().Add(time.Hour * 24).Unix(),
 		"iat":      time.Now().Unix(),
 	}
@@ -330,6 +370,7 @@ func GetUserProfile(c *gin.Context) {
 			"email":     user.Email,
 			"firstName": user.FirstName,
 			"lastName":  user.LastName,
+			"role":      user.Role,
 			"createdAt": user.CreatedAt,
 		},
 	})

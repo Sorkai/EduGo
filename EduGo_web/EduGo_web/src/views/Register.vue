@@ -68,6 +68,22 @@
           />
         </a-form-item>
 
+        <a-form-item
+          field="role"
+          label="用户类型"
+          :rules="[{ required: true, message: '请选择用户类型' }]"
+        >
+          <a-radio-group v-model="form.role">
+            <a-radio 
+              v-for="option in roleOptions" 
+              :key="option.value" 
+              :value="option.value"
+            >
+              {{ option.label }}
+            </a-radio>
+          </a-radio-group>
+        </a-form-item>
+
         <a-form-item>
           <a-button
             type="primary"
@@ -94,12 +110,16 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/components/MainLayout.vue'
 import { Message } from '@arco-design/web-vue'
+import userService, { USER_ROLES, USER_ROLE_NAMES } from '@/services/userService'
+import type { UserRole } from '@/services/userService'
+import axios from 'axios'
 
 interface RegisterForm {
   username: string
   email: string
   password: string
   confirmPassword: string
+  role: UserRole
 }
 
 const router = useRouter()
@@ -107,8 +127,17 @@ const form = ref<RegisterForm>({
   username: '',
   email: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
+  role: USER_ROLES.STUDENT // 默认为学生
 })
+
+// 可选的用户角色
+const roleOptions = [
+  { label: USER_ROLE_NAMES[USER_ROLES.TEACHER], value: USER_ROLES.TEACHER },
+  { label: USER_ROLE_NAMES[USER_ROLES.STUDENT], value: USER_ROLES.STUDENT },
+  { label: USER_ROLE_NAMES[USER_ROLES.PARENT], value: USER_ROLES.PARENT }
+]
+
 const loading = ref(false)
 const errorMessage = ref('')
 
@@ -120,9 +149,6 @@ const validatePasswordMatch = (value: string) => {
   return value === form.value.password
 }
 
-import userService from '@/services/userService'
-import axios from 'axios'
-
 const handleRegister = async () => {
   loading.value = true
   errorMessage.value = ''
@@ -133,7 +159,8 @@ const handleRegister = async () => {
       email: form.value.email,
       password: form.value.password,
       firstName: '',
-      lastName: ''
+      lastName: '',
+      role: form.value.role
     })
     
     Message.success('注册成功')

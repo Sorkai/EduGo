@@ -6,12 +6,21 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// 用户类型常量
+const (
+	RoleSuperAdmin = "super_admin" // 超级管理员
+	RoleAdmin      = "admin"       // 管理员
+	RoleTeacher    = "teacher"     // 教师
+	RoleStudent    = "student"     // 学生
+	RoleParent     = "parent"      // 家长
+)
+
 type User struct {
 	ID        int64  `gorm:"primaryKey"`
 	Username  string `gorm:"unique;not null"`
 	Password  string `gorm:"not null"`
 	Email     string `gorm:"unique;not null"`
-	Role      string `gorm:"default:'user'"`
+	Role      string `gorm:"default:'student'"`
 	Status    string `gorm:"default:'active'"`
 	FirstName string `gorm:"size:50"`
 	LastName  string `gorm:"size:50"`

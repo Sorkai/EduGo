@@ -96,13 +96,114 @@ func JWTMiddleware() gin.HandlerFunc {
 	}
 }
 
+// 权限控制中间件
+
+// SuperAdminOnly 只允许超级管理员访问
+func SuperAdminOnly() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, exists := c.Get("role")
+		if !exists || role != models.RoleSuperAdmin {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "超级管理员权限需要"})
+			return
+		}
+		c.Next()
+	}
+}
+
+// AdminOnly 只允许管理员及以上角色访问
 func AdminOnly() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, exists := c.Get("role")
-		if !exists || role != "admin" {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Admin access required"})
+		if !exists {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "管理员权限需要"})
 			return
 		}
+		
+		roleStr, ok := role.(string)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "角色类型错误"})
+			return
+		}
+		
+		if roleStr != models.RoleSuperAdmin && roleStr != models.RoleAdmin {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "管理员权限需要"})
+			return
+		}
+		
+		c.Next()
+	}
+}
+
+// TeacherOnly 只允许教师及以上角色访问
+func TeacherOnly() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, exists := c.Get("role")
+		if !exists {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "教师权限需要"})
+			return
+		}
+		
+		roleStr, ok := role.(string)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "角色类型错误"})
+			return
+		}
+		
+		if roleStr != models.RoleSuperAdmin && roleStr != models.RoleAdmin && roleStr != models.RoleTeacher {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "教师权限需要"})
+			return
+		}
+		
+		c.Next()
+	}
+}
+
+// StudentOnly 只允许学生及以上角色访问
+func StudentOnly() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, exists := c.Get("role")
+		if !exists {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "学生权限需要"})
+			return
+		}
+		
+		roleStr, ok := role.(string)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "角色类型错误"})
+			return
+		}
+		
+		if roleStr != models.RoleSuperAdmin && roleStr != models.RoleAdmin && 
+		   roleStr != models.RoleTeacher && roleStr != models.RoleStudent {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "学生权限需要"})
+			return
+		}
+		
+		c.Next()
+	}
+}
+
+// ParentOnly 只允许家长及以上角色访问
+func ParentOnly() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, exists := c.Get("role")
+		if !exists {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "家长权限需要"})
+			return
+		}
+		
+		roleStr, ok := role.(string)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "角色类型错误"})
+			return
+		}
+		
+		if roleStr != models.RoleSuperAdmin && roleStr != models.RoleAdmin && 
+		   roleStr != models.RoleTeacher && roleStr != models.RoleParent {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "家长权限需要"})
+			return
+		}
+		
 		c.Next()
 	}
 }

@@ -3,6 +3,25 @@ import IntelligentAssessment from '@/views/IntelligentAssessment.vue'
 import IntelligentTeaching from '@/views/IntelligentTeaching.vue'
 import VirtualReality from '@/views/VirtualReality.vue'
 import EducationalRobot from '@/views/EducationalRobot.vue'
+import UserManagement from '@/views/UserManagement.vue'
+
+// 路由守卫 - 检查用户角色权限
+const checkRolePermission = (requiredRoles: string[]) => {
+  return (to: any, from: any, next: any) => {
+    const userRole = localStorage.getItem('userRole') || sessionStorage.getItem('userRole')
+    
+    if (!userRole) {
+      // 未登录，重定向到登录页
+      next({ path: '/login', query: { redirect: to.fullPath } })
+    } else if (requiredRoles.includes(userRole)) {
+      // 有权限，允许访问
+      next()
+    } else {
+      // 无权限，重定向到首页
+      next({ path: '/' })
+    }
+  }
+}
 
 const routes = [
   {
@@ -48,6 +67,16 @@ const routes = [
     path: '/evaluation',
     name: 'IntelligentEvaluation',
     component: () => import('@/views/IntelligentEvaluation.vue')
+  },
+  {
+    path: '/user-management',
+    name: 'UserManagement',
+    component: UserManagement,
+    beforeEnter: checkRolePermission(['super_admin', 'admin', 'teacher']),
+    meta: {
+      requiresAuth: true,
+      roles: ['super_admin', 'admin', 'teacher']
+    }
   }
 ]
 
