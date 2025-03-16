@@ -95,6 +95,19 @@ const routes = [
 2. 修改环境变量值为实际环境的值
 3. 重启开发服务器或重新构建项目
 
+### 开发环境中的API代理
+
+在开发环境中，前端开发服务器会自动将API请求代理到配置的后端服务器地址。这是通过Vite的代理功能实现的，配置在`vite.config.ts`文件中。
+
+例如，如果您在`.env.local`中设置：
+```
+VITE_API_BASE_URL=http://localhost:10086/api/v1
+```
+
+当前端代码请求`/api/v1/login`时，Vite开发服务器会将请求代理到`http://localhost:10086/api/v1/login`。
+
+这样，您可以在开发环境中使用相对路径（如`/api/v1/login`）进行API调用，而在生产环境中，这些请求会被发送到环境变量中配置的完整URL。
+
 ### 在代码中使用环境变量
 
 环境变量通过 `import.meta.env` 对象访问：
