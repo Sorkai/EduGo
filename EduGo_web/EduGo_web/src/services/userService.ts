@@ -1,8 +1,9 @@
 import axios from 'axios';
+import config from '../config';
 
 // 创建axios实例
 const apiClient = axios.create({
-  baseURL: '/api/v1',
+  baseURL: config.apiBaseUrl,
   headers: {
     'Content-Type': 'application/json'
   }

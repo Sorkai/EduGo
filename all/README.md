@@ -91,6 +91,49 @@ npm run dev
 npm run build
 ```
 
+### 前后端分离部署
+
+项目支持前后端分离部署，前端可以通过环境变量配置后端API地址。
+
+#### 配置步骤
+
+1. 在前端项目根目录创建环境变量文件：
+   - 开发环境：`.env.local`
+   - 生产环境：`.env.production`
+
+2. 在环境变量文件中设置API地址：
+   ```
+   VITE_API_BASE_URL=http://your-api-server.com/api/v1
+   ```
+
+3. 构建前端项目：
+   ```sh
+   npm run build
+   ```
+
+4. 将构建后的文件部署到Web服务器（如Nginx、Apache等）
+
+#### 后端部署
+
+后端服务需要配置CORS（跨域资源共享）以允许前端访问：
+
+```go
+// 在main.go中添加CORS中间件
+router.Use(func(c *gin.Context) {
+    c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+    c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+    c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+    c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+
+    if c.Request.Method == "OPTIONS" {
+        c.AbortWithStatus(204)
+        return
+    }
+
+    c.Next()
+})
+```
+
 ## API接口
 
 前端通过`services/userService.ts`与后端API交互，主要包括：

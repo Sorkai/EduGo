@@ -6,7 +6,9 @@
 src/
 ├── assets/              # 静态资源
 ├── components/          # 公共组件
+├── config/              # 配置文件
 ├── router/              # 路由配置
+├── services/            # API服务
 ├── views/               # 页面视图
 ├── App.vue              # 根组件
 └── main.ts              # 入口文件
@@ -72,3 +74,41 @@ const routes = [
 - npm v9+
 - Vite 4+
 - TypeScript 5+
+
+## 环境变量配置
+
+项目使用环境变量来配置不同环境下的参数，主要用于前后端分离部署时配置API地址。
+
+### 环境变量文件
+
+- `.env.example`: 环境变量示例文件，包含所有可配置的环境变量
+- `.env.local`: 本地开发环境配置，不会被提交到版本控制
+- `.env.production`: 生产环境配置
+
+### 可用的环境变量
+
+- `VITE_API_BASE_URL`: API基础URL，例如 `http://api.edugo.com/api/v1`
+
+### 使用方法
+
+1. 复制 `.env.example` 为 `.env.local`（开发环境）或 `.env.production`（生产环境）
+2. 修改环境变量值为实际环境的值
+3. 重启开发服务器或重新构建项目
+
+### 在代码中使用环境变量
+
+环境变量通过 `import.meta.env` 对象访问：
+
+```typescript
+// 示例：访问API基础URL
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+```
+
+项目中已经封装了配置模块，可以通过以下方式使用：
+
+```typescript
+import config from '@/config'
+
+// 使用API基础URL
+const apiBaseUrl = config.apiBaseUrl
+```
