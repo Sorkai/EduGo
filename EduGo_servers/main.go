@@ -108,6 +108,47 @@ func main() {
 				userManagement.GET("/users/role/:role", controllers.GetUsersByRole)
 				userManagement.GET("/users/:id", controllers.GetUserByID)
 			}
+			
+			// 智能测评模块API
+			assessmentController := controllers.NewAssessmentController()
+			assessment := auth.Group("/assessment")
+			{
+				// 教师路由（教师及以上角色可访问）
+				assessmentTeacher := assessment.Group("/teacher")
+				assessmentTeacher.Use(middleware.TeacherOnly())
+				{
+					// 创建测评
+					assessmentTeacher.POST("", assessmentController.CreateAssessment)
+					// 获取教师创建的所有测评
+					assessmentTeacher.GET("", assessmentController.GetTeacherAssessments)
+					// 获取测评详情
+					assessmentTeacher.GET("/:id", assessmentController.GetTeacherAssessmentDetail)
+					// 添加题目到测评
+					assessmentTeacher.POST("/:id/question", assessmentController.AddQuestionToAssessment)
+					// 发布测评
+					assessmentTeacher.PUT("/:id/publish", assessmentController.PublishAssessment)
+					// 关闭测评
+					assessmentTeacher.PUT("/:id/close", assessmentController.CloseAssessment)
+					// 获取测评学生列表
+					assessmentTeacher.GET("/:id/students", assessmentController.GetAssessmentStudents)
+				}
+				
+				// 学生路由（学生角色可访问）
+				assessmentStudent := assessment.Group("/student")
+				assessmentStudent.Use(middleware.StudentOnly())
+				{
+					// 获取学生可参与的所有测评
+					assessmentStudent.GET("", assessmentController.GetStudentAssessments)
+					// 获取测评详情
+					assessmentStudent.GET("/:id", assessmentController.GetStudentAssessmentDetail)
+					// 开始测评
+					assessmentStudent.POST("/:id/start", assessmentController.StartAssessment)
+					// 提交答案
+					assessmentStudent.POST("/:id/submit", assessmentController.SubmitAssessment)
+					// 获取测评结果
+					assessmentStudent.GET("/:id/result", assessmentController.GetAssessmentResult)
+				}
+			}
 		}
 	}
 

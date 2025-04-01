@@ -448,6 +448,350 @@ Authorization: Bearer <jwt_token>
 
 在前后端分离部署环境中，前端应用需要配置正确的API基础URL，指向后端API服务器地址。详细配置方法请参考前端开发文档。
 
+## 智能测评模块
+
+### 教师相关API
+
+#### 创建测评（教师及以上权限）
+- **URL**: `/api/v1/assessment/teacher`
+- **Method**: `POST`
+- **Headers**: `Authorization: Bearer <jwt_token>`
+- **Request Body**:
+  ```json
+  {
+    "title": "测评标题",
+    "description": "测评描述"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "message": "测评创建成功",
+    "assessment": {
+      "id": 1,
+      "title": "测评标题",
+      "description": "测评描述",
+      "status": "draft",
+      "creator_id": 123
+    }
+  }
+  ```
+
+#### 获取教师创建的所有测评（教师及以上权限）
+- **URL**: `/api/v1/assessment/teacher`
+- **Method**: `GET`
+- **Headers**: `Authorization: Bearer <jwt_token>`
+- **Response**:
+  ```json
+  {
+    "assessments": [
+      {
+        "id": 1,
+        "title": "测评标题",
+        "description": "测评描述",
+        "status": "draft",
+        "start_time": "2025-04-01T10:00:00Z",
+        "end_time": "2025-04-10T10:00:00Z",
+        "total_score": 100,
+        "created_at": "2025-03-30T10:00:00Z"
+      }
+    ]
+  }
+  ```
+
+#### 获取测评详情（教师及以上权限）
+- **URL**: `/api/v1/assessment/teacher/:id`
+- **Method**: `GET`
+- **Headers**: `Authorization: Bearer <jwt_token>`
+- **URL Parameters**: `id` - 测评ID
+- **Response**:
+  ```json
+  {
+    "assessment": {
+      "id": 1,
+      "title": "测评标题",
+      "description": "测评描述",
+      "status": "draft",
+      "creator_id": 123,
+      "start_time": "2025-04-01T10:00:00Z",
+      "end_time": "2025-04-10T10:00:00Z",
+      "total_score": 100,
+      "created_at": "2025-03-30T10:00:00Z"
+    },
+    "questions": [
+      {
+        "id": 1,
+        "content": "题目内容",
+        "type": "single_choice",
+        "options": ["选项A", "选项B", "选项C", "选项D"],
+        "score": 10,
+        "explanation": "题目解析",
+        "answer": "选项A"
+      }
+    ]
+  }
+  ```
+
+#### 添加题目到测评（教师及以上权限）
+- **URL**: `/api/v1/assessment/teacher/:id/question`
+- **Method**: `POST`
+- **Headers**: `Authorization: Bearer <jwt_token>`
+- **URL Parameters**: `id` - 测评ID
+- **Request Body**:
+  ```json
+  {
+    "content": "题目内容",
+    "type": "single_choice",
+    "options": ["选项A", "选项B", "选项C", "选项D"],
+    "answer": "选项A",
+    "score": 10,
+    "explanation": "题目解析"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "message": "题目添加成功",
+    "question": {
+      "id": 1,
+      "content": "题目内容",
+      "type": "single_choice",
+      "options": ["选项A", "选项B", "选项C", "选项D"],
+      "answer": "选项A",
+      "score": 10,
+      "explanation": "题目解析"
+    }
+  }
+  ```
+
+#### 发布测评（教师及以上权限）
+- **URL**: `/api/v1/assessment/teacher/:id/publish`
+- **Method**: `PUT`
+- **Headers**: `Authorization: Bearer <jwt_token>`
+- **URL Parameters**: `id` - 测评ID
+- **Request Body**:
+  ```json
+  {
+    "start_time": "2025-04-01T10:00:00Z",
+    "end_time": "2025-04-10T10:00:00Z",
+    "student_ids": [1, 2, 3]
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "message": "测评发布成功",
+    "assessment": {
+      "id": 1,
+      "status": "published",
+      "start_time": "2025-04-01T10:00:00Z",
+      "end_time": "2025-04-10T10:00:00Z"
+    }
+  }
+  ```
+
+#### 关闭测评（教师及以上权限）
+- **URL**: `/api/v1/assessment/teacher/:id/close`
+- **Method**: `PUT`
+- **Headers**: `Authorization: Bearer <jwt_token>`
+- **URL Parameters**: `id` - 测评ID
+- **Response**:
+  ```json
+  {
+    "message": "测评已关闭",
+    "assessment": {
+      "id": 1,
+      "status": "closed"
+    }
+  }
+  ```
+
+#### 获取测评学生列表（教师及以上权限）
+- **URL**: `/api/v1/assessment/teacher/:id/students`
+- **Method**: `GET`
+- **Headers**: `Authorization: Bearer <jwt_token>`
+- **URL Parameters**: `id` - 测评ID
+- **Response**:
+  ```json
+  {
+    "assessment": {
+      "id": 1,
+      "title": "测评标题",
+      "total_score": 100
+    },
+    "students": [
+      {
+        "id": 1,
+        "username": "student1",
+        "email": "student1@example.com",
+        "firstName": "张",
+        "lastName": "三",
+        "status": "completed",
+        "score": 80,
+        "started_at": "2025-04-01T10:30:00Z",
+        "completed_at": "2025-04-01T11:30:00Z"
+      }
+    ]
+  }
+  ```
+
+### 学生相关API
+
+#### 获取学生可参与的所有测评（学生权限）
+- **URL**: `/api/v1/assessment/student`
+- **Method**: `GET`
+- **Headers**: `Authorization: Bearer <jwt_token>`
+- **Response**:
+  ```json
+  {
+    "assessments": [
+      {
+        "id": 1,
+        "title": "测评标题",
+        "description": "测评描述",
+        "status": "published",
+        "start_time": "2025-04-01T10:00:00Z",
+        "end_time": "2025-04-10T10:00:00Z",
+        "total_score": 100,
+        "student_status": "assigned",
+        "student_score": 0,
+        "started_at": null,
+        "completed_at": null
+      }
+    ]
+  }
+  ```
+
+#### 获取测评详情（学生权限）
+- **URL**: `/api/v1/assessment/student/:id`
+- **Method**: `GET`
+- **Headers**: `Authorization: Bearer <jwt_token>`
+- **URL Parameters**: `id` - 测评ID
+- **Response**:
+  ```json
+  {
+    "assessment": {
+      "id": 1,
+      "title": "测评标题",
+      "description": "测评描述",
+      "status": "published",
+      "creator_id": 123,
+      "start_time": "2025-04-01T10:00:00Z",
+      "end_time": "2025-04-10T10:00:00Z",
+      "total_score": 100,
+      "created_at": "2025-03-30T10:00:00Z"
+    },
+    "questions": [
+      {
+        "id": 1,
+        "content": "题目内容",
+        "type": "single_choice",
+        "options": ["选项A", "选项B", "选项C", "选项D"],
+        "score": 10,
+        "explanation": ""
+      }
+    ]
+  }
+  ```
+  注意：学生无法看到题目答案。
+
+#### 开始测评（学生权限）
+- **URL**: `/api/v1/assessment/student/:id/start`
+- **Method**: `POST`
+- **Headers**: `Authorization: Bearer <jwt_token>`
+- **URL Parameters**: `id` - 测评ID
+- **Response**:
+  ```json
+  {
+    "message": "测评已开始",
+    "assessment": {
+      "id": 1,
+      "title": "测评标题",
+      "end_time": "2025-04-10T10:00:00Z",
+      "total_score": 100
+    }
+  }
+  ```
+
+#### 提交答案（学生权限）
+- **URL**: `/api/v1/assessment/student/:id/submit`
+- **Method**: `POST`
+- **Headers**: `Authorization: Bearer <jwt_token>`
+- **URL Parameters**: `id` - 测评ID
+- **Request Body**:
+  ```json
+  {
+    "answers": [
+      {
+        "question_id": 1,
+        "answer": "选项A"
+      },
+      {
+        "question_id": 2,
+        "answer": "选项B"
+      }
+    ]
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "message": "答案提交成功",
+    "result": {
+      "assessment_id": 1,
+      "title": "测评标题",
+      "total_score": 100,
+      "your_score": 80,
+      "answers": [
+        {
+          "question_id": 1,
+          "content": "题目内容",
+          "your_answer": "选项A",
+          "correct_answer": "选项A",
+          "is_correct": true,
+          "score": 10,
+          "explanation": "题目解析"
+        }
+      ],
+      "ai_analysis": "根据您的答题情况，您对大部分知识点有很好的理解，但仍有少量知识点需要巩固。"
+    }
+  }
+  ```
+
+#### 获取测评结果（学生权限）
+- **URL**: `/api/v1/assessment/student/:id/result`
+- **Method**: `GET`
+- **Headers**: `Authorization: Bearer <jwt_token>`
+- **URL Parameters**: `id` - 测评ID
+- **Response**:
+  ```json
+  {
+    "assessment": {
+      "id": 1,
+      "title": "测评标题",
+      "description": "测评描述",
+      "total_score": 100
+    },
+    "result": {
+      "your_score": 80,
+      "answers": [
+        {
+          "question_id": 1,
+          "content": "题目内容",
+          "options": ["选项A", "选项B", "选项C", "选项D"],
+          "your_answer": "选项A",
+          "correct_answer": "选项A",
+          "is_correct": true,
+          "score": 10,
+          "explanation": "题目解析"
+        }
+      ],
+      "ai_analysis": "根据您的答题情况，您对大部分知识点有很好的理解，但仍有少量知识点需要巩固。",
+      "completed_at": "2025-04-01T11:30:00Z"
+    }
+  }
+  ```
+
 ## 错误处理
 
 API返回的错误格式统一为：

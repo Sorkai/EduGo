@@ -50,6 +50,11 @@ func InitDB(host, port, user, password, dbname string) error {
 		&models.AdminTeacherRelation{},
 		&models.TeacherStudentRelation{},
 		&models.StudentParentRelation{},
+		// 智能测评模块
+		&models.Assessment{},
+		&models.Question{},
+		&models.AssessmentStudent{},
+		&models.StudentAnswer{},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to auto migrate models: %w", err)
