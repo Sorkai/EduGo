@@ -296,6 +296,17 @@ VITE_API_BASE_URL=http://localhost:10086/api/v1
 
 环境变量通过 `import.meta.env` 对象访问：
 
+## 前端部署
+
+详细部署步骤请参考[部署指南](../../all/部署指南.md)，包含以下内容：
+
+1. 服务器要求
+2. 环境准备（Node.js、npm安装）
+3. 前端项目构建
+4. 静态资源部署
+5. 容器化部署选项
+6. 常见问题处理
+
 ```typescript
 // 示例：访问API基础URL
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
